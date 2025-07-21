@@ -1,0 +1,2 @@
+.venv
+models/faster-whisper-medium.en-int8/model.bin
