@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- icon-idle.svg -->
+
+<svg
+   width="128"
+   height="128"
+   viewBox="0 0 128 128"
+   version="1.1"
+   id="svg10"
+   sodipodi:docname="icon-idle.svg"
+   inkscape:export-filename="icon-idle.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs14" />
+  <sodipodi:namedview
+     id="namedview12"
+     pagecolor="#505050"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#505050"
+     showgrid="false"
+     inkscape:zoom="3.4023438"
+     inkscape:cx="27.921929"
+     inkscape:cy="56.431688"
+     inkscape:window-width="1920"
+     inkscape:window-height="1029"
+     inkscape:window-x="1080"
+     inkscape:window-y="416"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg10" />
+  <!-- Gray circle for the icon background -->
+  <circle
+     cx="64"
+     cy="64"
+     r="60"
+     fill="#BDBDBD"
+     id="circle2"
+     style="fill:#676b6e;fill-opacity:0.54570144" />
+  <!-- White microphone elements -->
+  <rect
+     x="56.525627"
+     y="20"
+     width="14.94875"
+     height="52.320717"
+     rx="7.4743767"
+     fill="#ffffff"
+     id="rect4"
+     style="stroke-width:1.24571" />
+  <rect
+     x="61.508537"
+     y="70.320717"
+     width="4.9829221"
+     height="30.293219"
+     fill="#ffffff"
+     id="rect6"
+     style="stroke-width:1.53574" />
+  <line
+     x1="46.559795"
+     y1="102.21812"
+     x2="81.440201"
+     y2="102.21812"
+     stroke="#ffffff"
+     stroke-width="9.95162"
+     stroke-linecap="round"
+     id="line8" />
+</svg>

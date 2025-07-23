@@ -1,0 +1,28 @@
+# whisper-ptt Configuration File
+
+[audio]
+# To find your device, run: python whisper-ptt-v1.1.py --list-devices
+# Use device name (e.g., "default") or index (e.g., 5).
+device = "default"
+sample_rate = 16000
+block_duration_ms = 30
+ring_buffer_duration_s = 3.0
+pre_roll_s = 0.7
+post_roll_s = 0.3
+
+[model]
+# Path to the faster-whisper model directory.
+path = "models/faster-whisper-medium.en-int8/"
+# "int8_float32" is a good balance for modern GPUs. Other options: "float16", "int8".
+compute_type = "int8_float32"
+device = "cuda"
+beam_size = 5
+repetition_penalty = 1.2
+log_prob_threshold = -1.0
+vad_min_silence_ms = 500
+
+[ui]
+# Hotkey combo
+hotkey = "ctrl_l"
+#enable_tray_icon = true
+enable_audio_cues = true

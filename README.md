@@ -92,3 +92,22 @@ HOTKEY_COMBO: Final[set] = {keyboard.Key.ctrl_l}
 ```python
 HOTKEY_COMBO: Final[set] = {keyboard.Key.ctrl_l, keyboard.Key.shift_l}
 ```
+
+## Troubleshooting
+
+### `libcudnn_ops_infer.so.8: cannot open shared object file` Error on Linux
+
+If you encounter this error when running the script with `device = "cuda"`, it means the dynamic linker cannot find the required NVIDIA cuDNN library. This can happen even if `torch` and `cudnn` were installed correctly via `pip`.
+
+The recommended solution is to add the library's path to the `LD_LIBRARY_PATH` environment variable automatically when you activate the virtual environment.
+
+1.  **Find the library path**: The path is typically inside your virtual environment:
+    `<project_directory>/.venv/lib/python3.11/site-packages/nvidia/cudnn/lib/`
+
+2.  **Edit the activation script**: Open the `.venv/bin/activate` file and add the following line at the very end:
+    ```bash
+    export LD_LIBRARY_PATH="/path/to/your/project/.venv/lib/python3.11/site-packages/nvidia/cudnn/lib:$LD_LIBRARY_PATH"
+    ```
+    Replace `/path/to/your/project/` with the absolute path to the `whisper-ptt-v1` directory.
+
+3.  **Re-activate the environment**: Run `deactivate` and then `source .venv/bin/activate`. The script should now run correctly.
