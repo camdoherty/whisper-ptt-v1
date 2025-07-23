@@ -28,7 +28,7 @@ from pynput import keyboard
 try:
     import gi
     gi.require_version('Gtk', '3.0')
-    from gi.repository import Gtk, GdkPixbuf
+    from gi.repository import Gtk, GdkPixbuf, GLib
 except ImportError:
     print("FATAL: PyGObject is not installed. Please install it to use the GTK interface.")
     print("On Debian/Ubuntu: sudo apt-get install libgirepository1.0-dev libcairo2-dev && pip install PyGObject")
@@ -59,7 +59,7 @@ class ModelConfig:
 
 @dataclass
 class UIConfig:
-    hotkey: str = "ctrl_l"
+    hotkeys: list[str] = field(default_factory=lambda: ["ctrl_l"])
     enable_audio_cues: bool = True
 
 @dataclass
@@ -82,7 +82,7 @@ path = "models/faster-whisper-medium.en-int8/"
 compute_type = "int8_float32"
 device = "cuda"
 [ui]
-hotkey = "ctrl_l"
+hotkeys = ["ctrl_l"]
 enable_audio_cues = true
 """
         config_path.write_text(default_config_str.strip())
@@ -168,7 +168,8 @@ class WhisperPTT:
         # Dependencies
         self.model = self._load_model()
         self.keyboard_controller = keyboard.Controller()
-        self.hotkey = self._parse_hotkey(CONFIG.ui.hotkey)
+        self.hotkeys = self._parse_hotkeys(CONFIG.ui.hotkeys)
+        self.pressed_keys = set()
         self.beep_start = self._create_beep(freq=440, duration_ms=50)
         self.beep_stop = self._create_beep(freq=880, duration_ms=50)
 
@@ -185,10 +186,16 @@ class WhisperPTT:
         logging.info(f"Model '{model_path.name}' loaded.")
         return model
 
-    def _parse_hotkey(self, key_str: str) -> keyboard.Key:
-        key_str = key_str.lower()
-        if hasattr(keyboard.Key, key_str): return getattr(keyboard.Key, key_str)
-        logging.fatal(f"Invalid hotkey '{key_str}'"); sys.exit(1)
+    def _parse_hotkeys(self, key_strs: list[str]) -> set[keyboard.Key]:
+        keys = set()
+        for key_str in key_strs:
+            key_str = key_str.lower()
+            if hasattr(keyboard.Key, key_str):
+                keys.add(getattr(keyboard.Key, key_str))
+            else:
+                logging.fatal(f"Invalid hotkey '{key_str}' in config")
+                sys.exit(1)
+        return keys
 
     def _create_beep(self, freq: int, duration_ms: int) -> np.ndarray:
         samples = int(duration_ms / 1000 * CONFIG.audio.sample_rate)
@@ -204,8 +211,8 @@ class WhisperPTT:
         if self.state == new_state: return
         self.state = new_state
         logging.info(f"State changed to: {self.state}")
-        # NEW: Delegate UI update to the tray icon class
-        self.tray.set_state(self.state)
+        # Schedule the UI update on the main GTK thread
+        GLib.idle_add(self.tray.set_state, self.state)
 
     def _process_transcription(self, audio_data: np.ndarray):
         # ... (this method is identical to v1.1) ...
@@ -235,23 +242,28 @@ class WhisperPTT:
             self.capture_buffer.append(audio_chunk)
     
     def _on_press(self, key):
-        if key == self.hotkey and self.state == "idle":
-            with self._lock:
-                if self.state != "idle": return
-                self._update_state("recording")
-            self._play_sound(self.beep_start)
-            self.capture_buffer.clear()
-            self.capture_buffer.extend(list(self.ring_buffer)[-self.pre_roll_blocks:])
+        if key in self.hotkeys:
+            self.pressed_keys.add(key)
+            if self.pressed_keys == self.hotkeys and self.state == "idle":
+                with self._lock:
+                    if self.state != "idle": return
+                    self._update_state("recording")
+                self._play_sound(self.beep_start)
+                self.capture_buffer.clear()
+                self.capture_buffer.extend(list(self.ring_buffer)[-self.pre_roll_blocks:])
 
     def _on_release(self, key):
-        if key == self.hotkey and self.state == "recording":
-            with self._lock:
-                if self.state != "recording": return
-                self._update_state("processing")
-            self._play_sound(self.beep_stop)
-            post_roll_silence = np.zeros(self.post_roll_frames, dtype=np.float32)
-            final_audio_data = np.concatenate(self.capture_buffer + [post_roll_silence])
-            threading.Thread(target=self._process_transcription, args=(final_audio_data,), daemon=True).start()
+        if key in self.hotkeys:
+            if self.state == "recording":
+                with self._lock:
+                    if self.state != "recording": return
+                    self._update_state("processing")
+                self._play_sound(self.beep_stop)
+                post_roll_silence = np.zeros(self.post_roll_frames, dtype=np.float32)
+                final_audio_data = np.concatenate(self.capture_buffer + [post_roll_silence])
+                threading.Thread(target=self._process_transcription, args=(final_audio_data,), daemon=True).start()
+            if key in self.pressed_keys:
+                self.pressed_keys.remove(key)
 
     def _audio_worker(self):
         logging.info("Audio worker started.")
@@ -272,7 +284,8 @@ class WhisperPTT:
         self.keyboard_listener = keyboard.Listener(on_press=self._on_press, on_release=self._on_release)
         self.keyboard_listener.start()
         
-        logging.info(f"PTT is running. Hold '{CONFIG.ui.hotkey}' to talk.")
+        hotkey_str = " + ".join(CONFIG.ui.hotkeys)
+        logging.info(f"PTT is running. Hold '{hotkey_str}' to talk.")
         # NEW: The main blocking call is now the GTK loop, managed by our tray class
         self.tray.run()
         # After Gtk.main() exits, the script will proceed to shutdown.

@@ -23,6 +23,6 @@ vad_min_silence_ms = 500
 
 [ui]
 # Hotkey combo
-hotkey = "ctrl_l"
+hotkeys = ["ctrl_r", "shift_r"]
 #enable_tray_icon = true
 enable_audio_cues = true

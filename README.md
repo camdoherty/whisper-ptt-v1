@@ -31,30 +31,28 @@ This architecture prevents the user interface (keyboard listener) from freezing 
 -   An NVIDIA GPU with CUDA Toolkit and cuDNN installed (tested with driver 535+).
 -   A working microphone.
 -   The `git` command-line tool.
+-   For Debian/Ubuntu-based systems, the GTK development libraries are required:
+    ```bash
+    sudo apt-get install libgirepository1.0-dev libcairo2-dev
+    ```
 
 ### 2. Installation
+
+This project includes a setup script that automates the entire installation process.
 
 1.  **Clone the Repository**
     ```bash
     git clone <your-repo-url>
-    cd whisper-ptt
+    cd whisper-ptt-v1
     ```
 
-2.  **Create a Python Virtual Environment**
+2.  **Run the Setup Script**
+    Make the script executable and run it:
     ```bash
-    python -m venv venv
-    source venv/bin/activate
+    chmod +x setup_venv.sh
+    ./setup_venv.sh
     ```
-
-3.  **Install Python Dependencies**
-    First, install `torch` with CUDA support. Find the correct version for your CUDA installation on the [PyTorch website](https://pytorch.org/get-started/locally/). For CUDA 12.1, the command is:
-    ```bash
-    pip install torch --index-url https://download.pytorch.org/whl/cu121
-    ```
-    Then, install the remaining packages from `requirements.txt`:
-    ```bash
-    pip install -r requirements.txt
-    ```
+    This script will create the virtual environment, install all dependencies, and apply necessary configuration fixes for the GTK interface and CUDA libraries.
 
 4.  **Download the Transcription Model**
     The script is configured to use the `medium.en` model quantized to INT8. You need to download it and place it in the correct directory.
@@ -77,21 +75,23 @@ python whisper-ptt-v1.py
 
 ## Configuration
 
-You can easily customize the script by editing the constants at the top of `whisper-ptt-v1.py`.
+Configuration is handled in the `config.toml` file.
 
-### Hotkey
+### Hotkeys
 
-The push-to-talk hotkey can be configured by modifying the `HOTKEY_COMBO` variable. It is a `set` that can contain one or more keys from `pynput.keyboard.Key`.
+The push-to-talk hotkey can be configured by editing the `hotkeys` list in the `[ui]` section of `config.toml`. You can specify a single key or a combination of multiple keys.
 
-**Example: Single Key (Left Ctrl)**
-```python
-HOTKEY_COMBO: Final[set] = {keyboard.Key.ctrl_l}
+**Example: Single Key (Right Ctrl)**
+```toml
+hotkeys = ["ctrl_r"]
 ```
 
-**Example: Key Combination (Left Ctrl + Left Shift)**
-```python
-HOTKEY_COMBO: Final[set] = {keyboard.Key.ctrl_l, keyboard.Key.shift_l}
+**Example: Key Combination (Right Ctrl + Right Shift)**
+```toml
+hotkeys = ["ctrl_r", "shift_r"]
 ```
+
+Valid key names are derived from the `pynput` library (e.g., `ctrl_l`, `shift_r`, `alt_gr`, `f1`, `page_down`).
 
 ## Troubleshooting
 
