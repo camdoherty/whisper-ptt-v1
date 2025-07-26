@@ -1,11 +1,7 @@
 # Whisper PTT v1
-
 A high-performance, push-to-talk (PTT) voice transcription script that uses `faster-whisper` for GPU-accelerated speech-to-text and types the output directly into your active window.
 
-This project is a complete rewrite of an earlier version, designed from the ground up for stability, low latency, and readability. It solves previous issues with transcription repetition and race conditions by implementing a robust, multi-threaded architecture.
-
 ## Features
-
 - **Push-to-Talk Operation**: Audio is captured only while a hotkey combination (e.g., `Left-Ctrl` + `Left-Shift`) is held down.
 - **Low Latency**: End-to-end latency from key release to typed text is minimal (typically under 1.5 seconds).
 - **Pre-roll Audio Buffer**: The script captures a short duration of audio *before* you press the hotkey, ensuring you never miss the beginning of an utterance.
@@ -14,7 +10,6 @@ This project is a complete rewrite of an earlier version, designed from the grou
 - **Stable & Responsive**: A non-blocking, multi-threaded design ensures the application remains responsive, even during transcription.
 
 ## Architecture Overview
-
 The stability and performance of `whisper-ptt-v1` come from its clean, multi-threaded design that separates concerns:
 
 1.  **Main Thread**: Handles application startup, shutdown, and runs the `pynput` keyboard listener to detect hotkey presses and releases.
@@ -24,9 +19,7 @@ The stability and performance of `whisper-ptt-v1` come from its clean, multi-thr
 This architecture prevents the user interface (keyboard listener) from freezing during the transcription process and eliminates the race conditions and audio buffering issues that plagued earlier versions.
 
 ## Setup Instructions
-
 ### 1. Prerequisites
-
 -   Python 3.10+
 -   An NVIDIA GPU with CUDA Toolkit and cuDNN installed (tested with driver 535+).
 -   A working microphone.
@@ -37,7 +30,6 @@ This architecture prevents the user interface (keyboard listener) from freezing 
     ```
 
 ### 2. Installation
-
 This project includes a setup script that automates the entire installation process.
 
 1.  **Clone the Repository**
@@ -66,7 +58,6 @@ This project includes a setup script that automates the entire installation proc
     *Note: The command above clones the FP16 model. `faster-whisper` will automatically convert it to INT8 on first load if `compute_type` is set to `int8` or `int8_float16`/`int8_float32`.*
 
 ## Usage
-
 With your virtual environment activated, simply run the script:
 
 ```bash
@@ -74,11 +65,9 @@ python whisper-ptt-v1.py
 ```
 
 ## Configuration
-
 Configuration is handled in the `config.toml` file.
 
 ### Hotkeys
-
 The push-to-talk hotkey can be configured by editing the `hotkeys` list in the `[ui]` section of `config.toml`. You can specify a single key or a combination of multiple keys.
 
 **Example: Single Key (Right Ctrl)**
@@ -94,13 +83,10 @@ hotkeys = ["ctrl_r", "shift_r"]
 Valid key names are derived from the `pynput` library (e.g., `ctrl_l`, `shift_r`, `alt_gr`, `f1`, `page_down`).
 
 ## Troubleshooting
-
 ### `libcudnn_ops_infer.so.8: cannot open shared object file` Error on Linux
-
 If you encounter this error when running the script with `device = "cuda"`, it means the dynamic linker cannot find the required NVIDIA cuDNN library. This can happen even if `torch` and `cudnn` were installed correctly via `pip`.
 
 The recommended solution is to add the library's path to the `LD_LIBRARY_PATH` environment variable automatically when you activate the virtual environment.
-
 1.  **Find the library path**: The path is typically inside your virtual environment:
     `<project_directory>/.venv/lib/python3.11/site-packages/nvidia/cudnn/lib/`
 
