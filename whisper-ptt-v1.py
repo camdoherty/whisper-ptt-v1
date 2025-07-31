@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 #
-# whisper-ptt-v1.2.py
+# whisper-ptt-v1.3.py
 #
 # This version replaces the pystray library with a native GTK system tray icon
 # using PyGObject. This provides a robust and visually correct icon on Linux
 # desktops like XFCE, GNOME, and MATE, solving rendering issues.
 #
 # Author: Your Name/Handle
-# Version: 1.2
+# Version: 1.3
 # Date: 2024-05-22
 
 import collections

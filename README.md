@@ -26,9 +26,9 @@ This architecture prevents the user interface (keyboard listener) from freezing 
 -   An NVIDIA GPU with CUDA Toolkit and cuDNN installed (tested with driver 535+).
 -   A working microphone.
 -   The `git` command-line tool.
--   For Debian/Ubuntu-based systems, the GTK development and notification libraries are required:
+-   For Debian/Ubuntu-based systems, the GTK development and notification libraries are required. This is a critical step for the user interface.
     ```bash
-    sudo apt-get install libgirepository1.0-dev libcairo2-dev libnotify-bin
+    sudo apt install libgirepository1.0-dev libcairo2-dev pkg-config python3-dev python3-gi gir1.2-gtk-3.0 libgtk-3-dev
     ```
 
 ### 2. Installation
@@ -102,14 +102,32 @@ voicenote_file = "~/ObsidianVault/🎙️VoiceNotes.md"
 ### `libcudnn_ops_infer.so.8: cannot open shared object file` Error on Linux
 If you encounter this error when running the script with `device = "cuda"`, it means the dynamic linker cannot find the required NVIDIA cuDNN library. This can happen even if `torch` and `cudnn` were installed correctly via `pip`.
 
-The recommended solution is to add the library's path to the `LD_LIBRARY_PATH` environment variable automatically when you activate the virtual environment.
-1.  **Find the library path**: The path is typically inside your virtual environment:
-    `<project_directory>/.venv/lib/python3.11/site-packages/nvidia/cudnn/lib/`
+The recommended solution is to create a simple launcher script that sets the required environment variable before running the application. This is safer than modifying the `activate` script directly.
 
-2.  **Edit the activation script**: Open the `.venv/bin/activate` file and add the following line at the very end:
+1.  **Create a `run.sh` script**: Create a new file named `run.sh` in the project directory.
+
+2.  **Add the following content**:
     ```bash
-    export LD_LIBRARY_PATH="/path/to/your/project/.venv/lib/python3.11/site-packages/nvidia/cudnn/lib:$LD_LIBRARY_PATH"
+    #!/bin/bash
+    
+    # Get the absolute path to the project directory
+    DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+    
+    # Set the library path to the one inside the virtual environment
+    export LD_LIBRARY_PATH="$DIR/.venv/lib/python3.11/site-packages/nvidia/cudnn/lib:$LD_LIBRARY_PATH"
+    
+    # Activate the virtual environment and run the application
+    source "$DIR/.venv/bin/activate"
+    python "$DIR/whisper-ptt-v1.py"
     ```
-    Replace `/path/to/your/project/` with the absolute path to the `whisper-ptt-v1` directory.
 
-3.  **Re-activate the environment**: Run `deactivate` and then `source .venv/bin/activate`. The script should now run correctly.
+3.  **Make the script executable**:
+    ```bash
+    chmod +x run.sh
+    ```
+
+4.  **Use the script to run the application**:
+    ```bash
+    ./run.sh
+    ```
+This script ensures the correct library path is always used without permanently modifying your shell environment or the virtual environment's activation files.
