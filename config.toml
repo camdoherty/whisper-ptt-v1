@@ -22,7 +22,11 @@ log_prob_threshold = -1.0
 vad_min_silence_ms = 500
 
 [ui]
-# Hotkey combo
+# Hotkey combo for typing out transcription
 hotkeys = ["ctrl_r", "shift_r"]
+# Hotkey combo for writing transcription to a voice note file
+hotkey_voicenote = ["ctrl_r", "alt_r"]
+# Path to the voice note file. Supports `~` for the home directory.
+voicenote_file = "~/ObsidianVault/🎙️VoiceNotes.md"
 #enable_tray_icon = true
 enable_audio_cues = true

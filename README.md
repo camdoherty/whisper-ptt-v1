@@ -2,12 +2,14 @@
 A high-performance, push-to-talk (PTT) voice transcription script that uses `faster-whisper` for GPU-accelerated speech-to-text and types the output directly into your active window.
 
 ## Features
-- **Push-to-Talk Operation**: Audio is captured only while a hotkey combination (e.g., `Left-Ctrl` + `Left-Shift`) is held down.
-- **Low Latency**: End-to-end latency from key release to typed text is minimal (typically under 1.5 seconds).
-- **Pre-roll Audio Buffer**: The script captures a short duration of audio *before* you press the hotkey, ensuring you never miss the beginning of an utterance.
-- **High-Performance Transcription**: Leverages `faster-whisper` with an NVIDIA GPU and INT8 quantization for fast and accurate results.
-- **Direct Text Input**: Uses `pynput` to reliably type the final text into any active application window, avoiding external dependencies like `xdotool`.
-- **Stable & Responsive**: A non-blocking, multi-threaded design ensures the application remains responsive, even during transcription.
+- **Dual Hotkey Actions**: Configure one hotkey for direct text input (typing) and a separate hotkey to save transcriptions directly to a file.
+- **Voice Notes**: Append timestamped transcriptions to a designated file, perfect for logging ideas or taking notes.
+- **Clickable Desktop Notifications**: Get instant, clickable feedback when a voice note is saved. Clicking the notification opens the voice note file directly in your default editor (requires `libnotify`).
+- **Low Latency**: End-to-end latency from key release to output is minimal.
+- **Pre-roll Audio Buffer**: Captures audio *before* you press the hotkey, so you never miss the start of a sentence.
+- **High-Performance Transcription**: Leverages `faster-whisper` with GPU acceleration for fast and accurate results.
+- **Direct Text Input**: Reliably types the final text into any active application window.
+- **Stable & Responsive**: A non-blocking, multi-threaded design ensures the application remains responsive.
 
 ## Architecture Overview
 The stability and performance of `whisper-ptt-v1` come from its clean, multi-threaded design that separates concerns:
@@ -24,9 +26,9 @@ This architecture prevents the user interface (keyboard listener) from freezing 
 -   An NVIDIA GPU with CUDA Toolkit and cuDNN installed (tested with driver 535+).
 -   A working microphone.
 -   The `git` command-line tool.
--   For Debian/Ubuntu-based systems, the GTK development libraries are required:
+-   For Debian/Ubuntu-based systems, the GTK development and notification libraries are required:
     ```bash
-    sudo apt-get install libgirepository1.0-dev libcairo2-dev
+    sudo apt-get install libgirepository1.0-dev libcairo2-dev libnotify-bin
     ```
 
 ### 2. Installation
@@ -65,22 +67,36 @@ python whisper-ptt-v1.py
 ```
 
 ## Configuration
-Configuration is handled in the `config.toml` file.
+Configuration is handled in the `config.toml` file, allowing you to customize hotkeys and file paths.
 
-### Hotkeys
-The push-to-talk hotkey can be configured by editing the `hotkeys` list in the `[ui]` section of `config.toml`. You can specify a single key or a combination of multiple keys.
+### Hotkey Actions
+You can configure two separate hotkey actions in the `[ui]` section:
 
-**Example: Single Key (Right Ctrl)**
-```toml
-hotkeys = ["ctrl_r"]
-```
+**1. Type Out Transcription (`hotkeys`)**
+This is the primary push-to-talk hotkey. When held, it records audio, and upon release, it types the transcribed text into the active window.
 
-**Example: Key Combination (Right Ctrl + Right Shift)**
+*Default: Right Ctrl + Right Shift*
 ```toml
 hotkeys = ["ctrl_r", "shift_r"]
 ```
 
-Valid key names are derived from the `pynput` library (e.g., `ctrl_l`, `shift_r`, `alt_gr`, `f1`, `page_down`).
+**2. Save Transcription to File (`hotkey_voicenote`)**
+This hotkey records audio and, upon release, appends the transcription as a new line in a specified file.
+
+*Default: Right Ctrl + Right Alt*
+```toml
+hotkey_voicenote = ["ctrl_r", "alt_r"]
+```
+
+Valid key names are derived from the `pynput` library (e.g., `ctrl_l`, `shift_r`, `alt_r`, `f1`, `/`).
+
+### Voice Note File Path
+You can specify the destination file for the voice note feature. The `~` character is automatically expanded to your home directory.
+
+*Example:*
+```toml
+voicenote_file = "~/ObsidianVault/🎙️VoiceNotes.md"
+```
 
 ## Troubleshooting
 ### `libcudnn_ops_infer.so.8: cannot open shared object file` Error on Linux
