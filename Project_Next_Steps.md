@@ -1,4 +1,4 @@
-# Whisper PTT - Recommended Next Steps
+# Whisper PTT - Next Steps
 
 This document outlines the recommended next steps for improving the `whisper-ptt-v1` project, focusing on stability, functionality, and user experience.
 
