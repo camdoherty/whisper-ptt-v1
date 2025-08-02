@@ -19,6 +19,7 @@ import signal
 import subprocess
 import sys
 import threading
+import urllib.parse
 from dataclasses import dataclass, field
 
 import numpy as np
@@ -119,14 +120,28 @@ class TrayIconGTK:
 
     def on_notification_click(self, notification, action):
         """Callback for when the notification is clicked."""
-        logging.info("Notification clicked, opening voice note file.")
+        logging.info("Notification clicked, opening voice note in Obsidian.")
         try:
-            # Use xdg-open for broad desktop environment compatibility on Linux.
-            subprocess.run(["xdg-open", str(self.app.voicenote_file_path)], check=True)
+            # Deconstruct the path to get the vault and file name
+            note_path = self.app.voicenote_file_path
+            vault_name = note_path.parent.name
+
+            # URL-encode the components for the Obsidian URI
+            encoded_vault = urllib.parse.quote(vault_name)
+            # Obsidian URI uses the filename without the extension (.stem)
+            encoded_file = urllib.parse.quote(note_path.stem)
+
+            # Construct the Obsidian URI
+            obsidian_uri = f"obsidian://open?vault={encoded_vault}&file={encoded_file}"
+
+            logging.info(f"Constructed Obsidian URI: {obsidian_uri}")
+
+            # Use xdg-open to launch the URI
+            subprocess.run(["xdg-open", obsidian_uri], check=True)
         except FileNotFoundError:
-            logging.error("`xdg-open` command not found. Cannot open file.")
+            logging.error("`xdg-open` command not found. Cannot open Obsidian URI.")
         except Exception as e:
-            logging.error(f"Failed to open voice note file: {e}")
+            logging.error(f"Failed to open Obsidian URI: {e}")
 
     def show_notification(self, title: str, body: str):
         """Displays a desktop notification."""
