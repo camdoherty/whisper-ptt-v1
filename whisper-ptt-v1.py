@@ -300,14 +300,14 @@ class WhisperPTT:
             if self.state != "idle": return
             
             # Check for type-out hotkey combo
-            if self.pressed_keys == self.hotkeys:
+            if self.hotkeys.issubset(self.pressed_keys):
                 self._update_state("recording")
                 self._play_sound(self.beep_start)
                 self.capture_buffer.clear()
                 self.capture_buffer.extend(list(self.ring_buffer)[-self.pre_roll_blocks:])
             
             # Check for voice note hotkey combo
-            elif self.pressed_keys == self.hotkeys_voicenote:
+            elif self.hotkeys_voicenote.issubset(self.pressed_keys):
                 self._update_state("recording_voicenote")
                 self._play_sound(self.beep_start)
                 self.capture_buffer.clear()

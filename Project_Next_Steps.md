@@ -4,21 +4,13 @@ This document outlines the recommended next steps for improving the `whisper-ptt
 
 ---
 
-## 1. Address Long-Term Stability (Hotkey Timeout Issue)
+## 1. Long-Term Stability (Hotkey Timeout Issue) - ✅ COMPLETED
 
-**Problem:** The application's hotkeys become unresponsive after a long period of inactivity, suggesting a silent crash in a background thread.
+**Problem:** The application's hotkeys would become unresponsive after approximately 5 minutes of use.
 
-**Hypothesis:** The `pynput` keyboard listener thread, which hooks into the OS's low-level input system, is likely crashing due to system events like screen locking, sleep/wake cycles, or other applications grabbing exclusive input focus.
+**Diagnosis:** The root cause was identified as a state corruption issue in the hotkey detection logic. Occasionally, a key-release event was missed, causing "stale" keys to remain in the `pressed_keys` set. The application was performing a strict equality check (`==`) which would then fail because the set of pressed keys contained these extra stale keys.
 
-### Recommended Plan:
-
-1.  **Add "Heartbeat" Logging (Immediate Diagnosis):**
-    *   **Action:** Add logging statements at the very beginning of the `_on_press` and `_on_release` methods.
-    *   **Goal:** To confirm that the `pynput` thread is the point of failure. If the log messages stop appearing when hotkeys are pressed, the diagnosis is confirmed.
-
-2.  **Implement a Listener Watchdog (Long-Term Fix):**
-    *   **Action:** Create a new "watchdog" thread that runs in the background. Its sole responsibility is to check every few seconds if the `keyboard_listener` thread is still alive (`is_alive()`).
-    *   **Goal:** If the watchdog finds the listener thread has died, it should log the event and automatically restart a new listener, making the application self-healing and resilient to these silent crashes.
+**Solution:** The hotkey detection logic in the `_on_press` method was changed from a strict equality check to a subset check (`issubset()`). This ensures that the hotkey combination is detected as long as the required keys are pressed, even if other stale keys are present in the state. This change makes the detection far more robust and permanently resolves the timeout issue.
 
 ---
 

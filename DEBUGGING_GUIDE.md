@@ -60,9 +60,9 @@ The system tray icon relies on GTK, accessed via `PyGObject`. This library has c
 
 2.  **The Correct Solution: Symlinking**
     This project is configured to use the stable, pre-compiled `PyGObject` provided by the OS. This avoids the complex build process entirely.
-    *   **Step 1 - Install System Package:** Ensure the correct GTK bindings and development files are installed via `apt`. For Debian 12 "Bookworm", the command is:
+    *   **Step 1 - Install System Package:** Ensure the correct GTK bindings and development files are installed via `apt`. For Debian 12 "Bookworm", the comprehensive command is:
         ```bash
-        sudo apt install libgirepository1.0-dev python3-gi gir1.2-gtk-3.0 libgtk-3-dev
+        sudo apt install libgirepository1.0-dev libcairo2-dev pkg-config python3-dev python3-gi gir1.2-gtk-3.0 libgtk-3-dev
         ```
     *   **Step 2 - Create the Symlink:** Link the system's `gi` module into the project's virtual environment. This makes it available to the application.
         ```bash
