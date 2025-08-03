@@ -1,0 +1,16 @@
+[Unit]
+Description=Whisper PTT Service
+# This ensures the graphical environment is ready before starting
+After=graphical-session.target
+
+[Service]
+# Execute the run script, which sets up the environment
+ExecStart=/home/cad/dev/whisper-ptt-v1/run.sh
+# Set the correct working directory
+WorkingDirectory=/home/cad/dev/whisper-ptt-v1
+# Automatically restart the service if it fails
+Restart=on-failure
+
+[Install]
+# This tells systemd to start the service as part of the graphical session
+WantedBy=graphical-session.target

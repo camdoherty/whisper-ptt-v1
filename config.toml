@@ -12,7 +12,8 @@ post_roll_s = 0.3
 
 [model]
 # Path to the faster-whisper model directory.
-path = "models/faster-whisper-medium.en-int8/"
+#path = "models/faster-whisper-medium.en-int8/"
+path = "models/faster-whisper-small.en-int8/"
 # "int8_float32" is a good balance for modern GPUs. Other options: "float16", "int8".
 compute_type = "int8_float32"
 device = "cuda"

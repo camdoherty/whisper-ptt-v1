@@ -111,7 +111,7 @@ class TrayIconGTK:
     def __init__(self, app_instance):
         self.app = app_instance
         self.icon = Gtk.StatusIcon()
-        self.icon.set_title("Whisper PTT")
+        self.icon.set_property("title", "Whisper PTT")
         self.icon.connect("popup-menu", self.on_right_click)
         Notify.init("Whisper PTT")
         self.notification = Notify.Notification.new("", "", "")
@@ -166,9 +166,9 @@ class TrayIconGTK:
             # GdkPixbuf is the native way to load images for GTK icons.
             # This correctly handles RGBA transparency.
             pixbuf = GdkPixbuf.Pixbuf.new_from_file(icon_path)
-            self.icon.set_from_pixbuf(pixbuf)
-            self.icon.set_tooltip_text(tooltip_map.get(state, "Whisper PTT"))
-            self.icon.set_visible(True)
+            self.icon.set_property("pixbuf", pixbuf)
+            self.icon.set_property("tooltip-text", tooltip_map.get(state, "Whisper PTT"))
+            self.icon.set_property("visible", True)
         except gi.repository.GLib.Error as e:
             logging.warning(f"Could not load icon '{icon_path}': {e.message}. Tray icon not updated.")
 
@@ -294,14 +294,26 @@ class WhisperPTT:
             self.capture_buffer.append(audio_chunk)
 
     def _write_to_voicenote_file(self, text: str):
-        """Appends a formatted transcription to the voice note file."""
+        """Prepends a formatted transcription to the voice note file."""
         try:
             self.voicenote_file_path.parent.mkdir(parents=True, exist_ok=True)
+            
+            # Read existing content first
+            existing_content = ""
+            if self.voicenote_file_path.exists():
+                with open(self.voicenote_file_path, "r", encoding="utf-8") as f:
+                    existing_content = f.read()
+
+            # Prepare the new note
             timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            formatted_line = f"__{timestamp}__\n{text}\n\n"
-            with open(self.voicenote_file_path, "a", encoding="utf-8") as f:
-                f.write(formatted_line)
-            logging.info(f"Appended to {self.voicenote_file_path}")
+            new_note = f"__{timestamp}__\n{text}\n\n"
+
+            # Write the new note followed by the old content
+            with open(self.voicenote_file_path, "w", encoding="utf-8") as f:
+                f.write(new_note)
+                f.write(existing_content)
+
+            logging.info(f"Prepended to {self.voicenote_file_path}")
             GLib.idle_add(self.tray.show_notification, f"Note Saved to {self.voicenote_file_path.name}", text)
         except Exception as e:
             logging.error(f"Failed to write to voice note file: {e}")
