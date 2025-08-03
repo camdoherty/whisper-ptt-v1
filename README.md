@@ -1,24 +1,25 @@
 # Whisper PTT v1
-A high-performance, push-to-talk (PTT) voice transcription script that uses `faster-whisper` for GPU-accelerated speech-to-text and types the output directly into your active window.
+A high-performance, push-to-talk (PTT) voice transcription script that uses `faster-whisper` for GPU-accelerated speech-to-text and types the output directly into your active window or a user-configured Obsidian note.
 
 ## Features
 - **Dual Hotkey Actions**: Configure one hotkey for direct text input (typing) and a separate hotkey to save transcriptions directly to a file.
 - **Voice Notes**: Append timestamped transcriptions to a designated file, perfect for logging ideas or taking notes.
-- **Clickable Desktop Notifications**: Get instant, clickable feedback when a voice note is saved. Clicking the notification opens the voice note file directly in your default editor (requires `libnotify`).
+- **Clickable Desktop Notifications**: Get instant, clickable feedback when a voice note is saved. For Obsidian users, clicking the notification opens the note directly in your vault. For others, it opens the file in the default text editor.
 - **Low Latency**: End-to-end latency from key release to output is minimal.
 - **Pre-roll Audio Buffer**: Captures audio *before* you press the hotkey, so you never miss the start of a sentence.
 - **High-Performance Transcription**: Leverages `faster-whisper` with GPU acceleration for fast and accurate results.
 - **Direct Text Input**: Reliably types the final text into any active application window.
-- **Stable & Responsive**: A non-blocking, multi-threaded design ensures the application remains responsive.
+- **Stable & Responsive**: A non-blocking, multi-threaded design with robust hotkey detection ensures the application remains responsive and reliable over long periods.
 
 ## Architecture Overview
 The stability and performance of `whisper-ptt-v1` come from its clean, multi-threaded design that separates concerns:
 
-1.  **Main Thread**: Handles application startup, shutdown, and runs the `pynput` keyboard listener to detect hotkey presses and releases.
-2.  **Audio Worker Thread**: Runs in the background, continuously capturing audio from the microphone into a small, efficient ring buffer. This ensures audio is always available for the pre-roll.
-3.  **Transcription Worker Thread**: A new, short-lived thread is spawned each time the PTT key is released. This thread takes the captured audio, sends it to the Whisper model for processing, and types the result.
+1.  **Main Thread (GTK)**: Handles application startup, shutdown, and runs the GTK main loop for the system tray icon and notifications.
+2.  **Keyboard Listener Thread (`pynput`)**: Runs in the background to detect hotkey presses and releases globally. The detection logic is robust against missed key-release events, preventing long-term lockups.
+3.  **Audio Worker Thread**: Runs in the background, continuously capturing audio from the microphone into a small, efficient ring buffer. This ensures audio is always available for the pre-roll.
+4.  **Transcription Worker Thread**: A new, short-lived thread is spawned each time the PTT key is released. This thread takes the captured audio, sends it to the Whisper model for processing, and types the result.
 
-This architecture prevents the user interface (keyboard listener) from freezing during the transcription process and eliminates the race conditions and audio buffering issues that plagued earlier versions.
+This architecture prevents the user interface from freezing during transcription and ensures high stability.
 
 ## Setup Instructions
 ### 1. Prerequisites
@@ -91,12 +92,13 @@ hotkey_voicenote = ["ctrl_r", "alt_r"]
 Valid key names are derived from the `pynput` library (e.g., `ctrl_l`, `shift_r`, `alt_r`, `f1`, `/`).
 
 ### Voice Note File Path
-You can specify the destination file for the voice note feature. The `~` character is automatically expanded to your home directory.
+You can specify the destination file for the voice note feature. New notes are prepended to the top of the file. The `~` character is automatically expanded to your home directory.
 
 *Example:*
 ```toml
 voicenote_file = "~/ObsidianVault/🎙️VoiceNotes.md"
 ```
+If the file is located within an Obsidian vault, clicking the notification will open it directly in Obsidian.
 
 ## Troubleshooting
 ### `libcudnn_ops_infer.so.8: cannot open shared object file` Error on Linux
