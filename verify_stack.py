@@ -9,7 +9,7 @@ import sys
 import os
 
 # --- Configuration (match it to your main script) ---
-MODEL_PATH = os.path.expanduser("~/dev/whisper/whisper-ptt/models/medium.en-int8/faster-whisper-medium.en-int8/")
+MODEL_PATH = "models/faster-whisper-small.en-int8/"
 COMPUTE_TYPE = "int8_float32"
 DEVICE = "cuda"
 
