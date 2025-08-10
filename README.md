@@ -1,5 +1,5 @@
 # Whisper PTT v1.3
-A high-performance, push-to-talk (PTT) voice transcription script that uses `faster-whisper` for GPU-accelerated speech-to-text and types the output directly into your active window or a user-defined file.
+A high-performance, push-to-talk (PTT) voice transcription script using `faster-whisper` for on-device speech-to-text. Output is typed directly into your active window or a user-defined note file.
 
 ## Features
 - **Dual Hotkey Actions**: Configure one hotkey for direct text input (typing) and a separate hotkey to save transcriptions directly to a file.

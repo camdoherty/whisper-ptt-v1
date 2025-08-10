@@ -1,33 +1,45 @@
-# whisper-ptt Configuration File
-
 [audio]
-# To find your device, run: `python app.py --list-devices`
-# Use device name (e.g., "default") or index (e.g., 5).
 device = "default"
 sample_rate = 16000
 block_duration_ms = 30
-ring_buffer_duration_s = 3.0
-pre_roll_s = 0.7
-post_roll_s = 0.3
+ring_buffer_duration_s = 6.5
+pre_roll_s = 0.85
+post_roll_s = 0.20
 
 [model]
-# Path to the faster-whisper model directory.
-#path = "models/faster-whisper-medium.en-int8/"
-path = "models/faster-whisper-small.en-int8/"
-# "int8_float32" is a good balance for modern GPUs. "int8" works well on CPU
+path = "models/faster-whisper-base.en/"
 compute_type = "int8"
 device = "cpu"
-beam_size = 5
+
+# latency/quality
+beam_size = 1
 repetition_penalty = 1.2
 log_prob_threshold = -1.0
-vad_min_silence_ms = 500
+
+# stability & filters
+language = "en"
+temperature = 0.0
+compression_ratio_threshold = 2.4
+no_speech_threshold = 0.6
+condition_on_previous_text = false
+word_timestamps = false
+
+# VAD
+vad_min_silence_ms = 300
+vad_speech_pad_ms = 30
+# vad_threshold = 0.5  # optional
+
+# CPU hints
+cpu_threads = 4
+num_workers = 1
+
+# Env caps
+omp_num_threads = 4
+mkl_num_threads = 1
+openblas_num_threads = 1
 
 [ui]
-# Hotkey combo for typing out transcription
 hotkeys = ["ctrl_r", "shift_r"]
-# Hotkey combo for writing transcription to a voice note file
 hotkey_voicenote = ["ctrl_r", "alt_r"]
-# Path to the voice note file. Supports `~` for the home directory.
 voicenote_file = "~/ObsidianVault1/🎙️VoiceNotes.md"
-#enable_tray_icon = true
 enable_audio_cues = true
