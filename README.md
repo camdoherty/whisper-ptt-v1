@@ -1,23 +1,27 @@
-# Whisper PTT v1
-A high-performance, push-to-talk (PTT) voice transcription script that uses `faster-whisper` for GPU-accelerated speech-to-text and types the output directly into your active window or a user-configured Obsidian note.
+# Whisper PTT v1.3
+A high-performance, push-to-talk (PTT) voice transcription script that uses `faster-whisper` for GPU-accelerated speech-to-text and types the output directly into your active window or a user-defined file.
 
 ## Features
 - **Dual Hotkey Actions**: Configure one hotkey for direct text input (typing) and a separate hotkey to save transcriptions directly to a file.
+- **Robust Error Recovery**: Automatically recovers from audio device disconnections and system suspend/resume cycles without crashing.
+- **XDG Autostart**: Natively integrates with the standard Linux desktop startup process.
 - **Voice Notes**: Append timestamped transcriptions to a designated file, perfect for logging ideas or taking notes.
-- **Clickable Desktop Notifications**: Get instant, clickable feedback when a voice note is saved. For Obsidian users, clicking the notification opens the note directly in your vault. For others, it opens the file in the default text editor.
+- **Clickable Desktop Notifications**: Get instant, clickable feedback when a voice note is saved. For Obsidian users, clicking the notification opens the note directly in your vault.
 - **Low Latency**: End-to-end latency from key release to output is minimal.
 - **Pre-roll Audio Buffer**: Captures audio *before* you press the hotkey, so you never miss the start of a sentence.
 - **High-Performance Transcription**: Leverages `faster-whisper` with GPU acceleration for fast and accurate results.
-- **Direct Text Input**: Reliably types the final text into any active application window.
 - **Stable & Responsive**: A non-blocking, multi-threaded design with robust hotkey detection ensures the application remains responsive and reliable over long periods.
 
 ## Architecture Overview
-The stability and performance of `whisper-ptt-v1` come from its clean, multi-threaded design that separates concerns:
+The stability and performance of `whisper-ptt` come from its clean, modular design that separates concerns:
 
-1.  **Main Thread (GTK)**: Handles application startup, shutdown, and runs the GTK main loop for the system tray icon and notifications.
-2.  **Keyboard Listener Thread (`pynput`)**: Runs in the background to detect hotkey presses and releases globally. The detection logic is robust against missed key-release events, preventing long-term lockups.
-3.  **Audio Worker Thread**: Runs in the background, continuously capturing audio from the microphone into a small, efficient ring buffer. This ensures audio is always available for the pre-roll.
-4.  **Transcription Worker Thread**: A new, short-lived thread is spawned each time the PTT key is released. This thread takes the captured audio, sends it to the Whisper model for processing, and types the result.
+-   **`config.py`**: Manages configuration loading and dataclasses.
+-   **`tray.py`**: Handles all GTK user interface components, including the system tray icon and notifications.
+-   **`whisper_ptt.py`**: The main application entry point, containing the core `WhisperPTT` class and its multi-threaded architecture:
+    1.  **Main Thread (GTK)**: Runs the GTK main loop for the UI.
+    2.  **Keyboard Listener Thread (`pynput`)**: Detects hotkey presses globally.
+    3.  **Audio Worker Thread**: Manages the microphone input stream and handles device errors.
+    4.  **Transcription Worker Thread**: A new, short-lived thread is spawned for each transcription job.
 
 This architecture prevents the user interface from freezing during transcription and ensures high stability.
 
@@ -47,25 +51,37 @@ This project includes a setup script that automates the entire installation proc
     chmod +x setup_venv.sh
     ./setup_venv.sh
     ```
-    This script will create the virtual environment, install all dependencies, and apply necessary configuration fixes for the GTK interface and CUDA libraries.
-
-4.  **Download the Transcription Model**
-    The script is configured to use the `medium.en` model quantized to INT8. You need to download it and place it in the correct directory.
-
-    We will use `git` to download the model files from Hugging Face.
-    ```bash
-    # Ensure you have Git LFS installed: git lfs install
-    mkdir -p models
-    git clone https://huggingface.co/Systran/faster-whisper-medium.en models/faster-whisper-medium.en-int8
-    ```
-    *Note: The command above clones the FP16 model. `faster-whisper` will automatically convert it to INT8 on first load if `compute_type` is set to `int8` or `int8_float16`/`int8_float32`.*
+    This script will create the virtual environment, install all dependencies, and apply necessary configuration fixes for the GTK interface and CUDA libraries. The required transcription model will be downloaded automatically on first run.
 
 ## Usage
-With your virtual environment activated, simply run the script:
+The recommended way to run the application is by using the provided `run.sh` script, which ensures the environment is set up correctly.
 
 ```bash
-python whisper-ptt-v1.py
+./run.sh
 ```
+
+## Autostart on Login
+To have the application start automatically when you log in, you can use the standard XDG Autostart method.
+
+1.  **Create the Autostart Directory**:
+    If it doesn't already exist, create the directory where desktop startup files are stored:
+    ```bash
+    mkdir -p ~/.config/autostart
+    ```
+
+2.  **Create the `.desktop` File**:
+    Create a new file at `~/.config/autostart/whisper-ptt.desktop` with the following content. Make sure to replace `/path/to/your/project` with the actual, absolute path to the `whisper-ptt-v1` directory.
+    ```ini
+    [Desktop Entry]
+    Type=Application
+    Name=Whisper PTT
+    Exec=/path/to/your/project/run.sh
+    Icon=/path/to/your/project/icon-idle.png
+    Comment=Voice to text application
+    Terminal=false
+    ```
+
+The application will now launch automatically the next time you log into your desktop session.
 
 ## Configuration
 Configuration is handled in the `config.toml` file, allowing you to customize hotkeys and file paths.
@@ -102,34 +118,8 @@ If the file is located within an Obsidian vault, clicking the notification will 
 
 ## Troubleshooting
 ### `libcudnn_ops_infer.so.8: cannot open shared object file` Error on Linux
-If you encounter this error when running the script with `device = "cuda"`, it means the dynamic linker cannot find the required NVIDIA cuDNN library. This can happen even if `torch` and `cudnn` were installed correctly via `pip`.
+If you encounter this error, it means the dynamic linker cannot find the required NVIDIA cuDNN library.
 
-The recommended solution is to create a simple launcher script that sets the required environment variable before running the application. This is safer than modifying the `activate` script directly.
+The provided `setup_venv.sh` script attempts to handle this, but if the problem persists, the solution is to use the `run.sh` launcher script. This script correctly sets the `LD_LIBRARY_PATH` environment variable before starting the application.
 
-1.  **Create a `run.sh` script**: Create a new file named `run.sh` in the project directory.
-
-2.  **Add the following content**:
-    ```bash
-    #!/bin/bash
-    
-    # Get the absolute path to the project directory
-    DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-    
-    # Set the library path to the one inside the virtual environment
-    export LD_LIBRARY_PATH="$DIR/.venv/lib/python3.11/site-packages/nvidia/cudnn/lib:$LD_LIBRARY_PATH"
-    
-    # Activate the virtual environment and run the application
-    source "$DIR/.venv/bin/activate"
-    python "$DIR/whisper-ptt-v1.py"
-    ```
-
-3.  **Make the script executable**:
-    ```bash
-    chmod +x run.sh
-    ```
-
-4.  **Use the script to run the application**:
-    ```bash
-    ./run.sh
-    ```
-This script ensures the correct library path is always used without permanently modifying your shell environment or the virtual environment's activation files.
+**Always use `./run.sh` to start the application to avoid this issue.**

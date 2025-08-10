@@ -1,4 +1,4 @@
-# Technical Debugging Guide for whisper-ptt-v1
+# Technical Debugging Guide for Whisper PTT
 
 This guide provides high-level troubleshooting steps for developers working on this project. It covers the two most complex and sensitive areas of the application: the NVIDIA CUDA environment and the GTK graphical interface dependencies.
 
@@ -73,3 +73,35 @@ This symlink method is the **intended and most stable** way to resolve GTK depen
 
 **Relevant Documentation:**
 - [PyGObject - Getting Started](https://pygobject.readthedocs.io/en/latest/getting_started.html)
+
+---
+
+## 3. Autostart and Runtime Issues
+
+If the application fails to start automatically or stops working correctly after the system has been running for a while (especially after resuming from suspend), follow these steps.
+
+### Symptoms of a Problem:
+- The tray icon does not appear after logging in.
+- The tray icon is visible, but transcription fails silently.
+
+### Debugging Workflow:
+
+1.  **Check the Autostart Configuration:**
+    The application is launched via an XDG Autostart file. First, ensure this file is correctly configured:
+    ```bash
+    cat ~/.config/autostart/whisper-ptt.desktop
+    ```
+    Verify that the `Exec` and `Icon` paths are correct and absolute.
+
+2.  **Check for a Stale Process:**
+    If the application is in a bad state, a stale process might still be running. Find and kill it before attempting to debug further.
+    ```bash
+t    kill $(pgrep -f "python /home/cad/dev/whisper-ptt-v1/whisper-ptt.py")
+    ```
+
+3.  **Run Manually for Live Logs:**
+    The most effective way to diagnose a runtime issue is to run the application manually from a terminal. This provides a live view of all log messages, including any errors that occur during transcription or recovery.
+    ```bash
+    /home/cad/dev/whisper-ptt-v1/run.sh
+    ```
+    After running this command, try to reproduce the issue (e.g., by suspending and resuming the system). Any errors will be printed directly to your terminal.

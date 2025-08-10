@@ -1,0 +1,13 @@
+[Unit]
+Description=Whisper PTT Service
+After=graphical-session.target
+BindsTo=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+ExecStart=/home/cad/dev/whisper-ptt-v1/run.sh
+WorkingDirectory=/home/cad/dev/whisper-ptt-v1
+Restart=on-failure
+
+[Install]
+WantedBy=graphical-session.target
