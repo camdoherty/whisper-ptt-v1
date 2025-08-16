@@ -3,15 +3,7 @@ A high-performance, push-to-talk (PTT) voice transcription app for Linux desktop
 
 This project is a Python wrapper for a community implementation of OpenAI's Whisper model, offering a powerful offline alternative to cloud-based STT services.
 
-## Key Features
-- **Dual Hotkey Actions**: Use one hotkey for direct text input and another to save transcriptions to a file.
-- **High-Performance & Local**: Leverages `faster-whisper` with GPU or CPU acceleration for fast, private, and accurate results.
-- **Pre-roll Audio Buffer**: Captures audio *before* you press the hotkey, so you never miss the start of a sentence.
-- **Robust Error Recovery**: Automatically recovers from audio device disconnections and system suspend/resume cycles.
-- **Voice Notes**: Append timestamped transcriptions to a designated file, perfect for logging ideas.
-- **Stable & Responsive**: A multi-threaded design ensures the app remains responsive and reliable.
-
-## Configuration Highlights
+## Configuration
 `whisper-ptt` is configured with a simple `config.toml` file.
 
 ```toml
@@ -28,6 +20,14 @@ compute_type = "int8"
 hotkeys = ["ctrl_r", "shift_r"]
 hotkey_voicenote = ["ctrl_r", "alt_r"]
 ```
+
+## Features
+- **Dual Hotkey Actions**: Use one hotkey for direct text input and another to save transcriptions to a file.
+- **High-Performance & Local**: Leverages `faster-whisper` with GPU or CPU acceleration for fast, private, and accurate results.
+- **Pre-roll Audio Buffer**: Captures audio *before* you press the hotkey, so you never miss the start of a sentence.
+- **Robust Error Recovery**: Automatically recovers from audio device disconnections and system suspend/resume cycles.
+- **Voice Notes**: Append timestamped transcriptions to a designated file, perfect for logging ideas.
+- **Stable & Responsive**: A multi-threaded design ensures the app remains responsive and reliable.
 
 ## Setup Instructions
 ### 1. Prerequisites
